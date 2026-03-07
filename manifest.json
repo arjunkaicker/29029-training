@@ -1,0 +1,16 @@
+{
+  "name": "29029 Whistler Training",
+  "short_name": "29029 Train",
+  "description": "Anisa & Arjun - 24-Week Training Plan for 29029 Whistler 2026",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a365d",
+  "theme_color": "#1a365d",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a365d' width='100' height='100' rx='20'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='24' font-weight='bold' font-family='system-ui'>29029</text><text x='50' y='75' text-anchor='middle' fill='%23ed8936' font-size='12' font-weight='bold' font-family='system-ui'>TRAIN</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

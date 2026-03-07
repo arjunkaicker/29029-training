@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>29029 Whistler 2026 - Anisa & Arjun</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="29029 Train">
+<meta name="theme-color" content="#1a365d">
+<style>
+  :root {
+    --primary: #1a365d;
+    --primary-light: #2a4a7f;
+    --accent: #ed8936;
+    --accent-light: #f6ad55;
+    --success: #38a169;
+    --success-light: #68d391;
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --text: #2d3748;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+    --bonus: #805ad5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 2rem;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 1.25rem 1rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .header h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 0.15rem; }
+  .header .subtitle { font-size: 0.8rem; opacity: 0.85; margin-bottom: 0.5rem; }
+  .countdown { font-size: 0.85rem; opacity: 0.9; margin-bottom: 0.5rem; }
+  .countdown strong { font-size: 1.05rem; }
+
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.2rem; font-weight: 700; }
+  .stat-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
+
+  .mountain-container { max-width: 600px; margin: 1.5rem auto; padding: 0 1rem; }
+
+  .mountain-progress {
+    position: relative;
+    height: 180px;
+    background: linear-gradient(180deg, #bee3f8 0%, #ebf8ff 100%);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .mountain-svg { position: absolute; bottom: 0; width: 100%; height: 100%; }
+
+  .mountain-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+  }
+
+  .mountain-label .big-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+    text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+    line-height: 1;
+  }
+
+  .mountain-label .big-label {
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+  }
+
+  .everest-bar { max-width: 600px; margin: 0 auto 1.25rem; padding: 0 1rem; }
+
+  .everest-track {
+    height: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .everest-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%);
+    border-radius: 12px;
+    transition: width 0.8s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+
+  .everest-fill span { font-size: 0.65rem; font-weight: 700; color: white; white-space: nowrap; }
+
+  .everest-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: var(--text-light);
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+
+  .nav-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .nav-tab {
+    flex: 1;
+    padding: 0.55rem 0.5rem;
+    border: none;
+    background: var(--card);
+    color: var(--text-light);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+
+  .nav-tab.active { background: var(--primary); color: white; }
+  .nav-tab:hover:not(.active) { background: var(--border); }
+
+  .content { max-width: 600px; margin: 0 auto; padding: 0 1rem; }
+
+  .week-card {
+    background: var(--card);
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 2px solid transparent;
+  }
+
+  .week-card.current-week { border-color: var(--accent); }
+  .week-card.fully-complete { border-color: var(--success); }
+
+  .week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .week-header:hover { background: #f7fafc; }
+  .week-header-left { display: flex; flex-direction: column; gap: 1px; }
+  .week-title { font-weight: 700; font-size: 0.9rem; }
+  .week-phase { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .week-dates { font-size: 0.68rem; color: var(--text-light); }
+
+  .week-header-right { display: flex; align-items: center; gap: 0.75rem; }
+  .week-progress-mini { font-size: 0.73rem; font-weight: 600; color: var(--text-light); }
+  .week-progress-mini.complete { color: var(--success); }
+  .week-chevron { font-size: 0.75rem; color: var(--text-light); transition: transform 0.2s; }
+  .week-card.expanded .week-chevron { transform: rotate(180deg); }
+
+  .week-sessions { display: none; padding: 0 0.75rem 0.75rem; }
+  .week-card.expanded .week-sessions { display: block; }
+
+  .session-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.7rem;
+    border-radius: 8px;
+    margin-bottom: 0.4rem;
+    background: var(--bg);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .session-card:hover { border-color: var(--border); }
+  .session-card.completed { background: #f0fff4; border-color: #c6f6d5; }
+  .session-card.bonus-session { border-left: 3px solid var(--bonus); }
+
+  .session-check {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.3s;
+    font-size: 0.8rem;
+  }
+
+  .session-card.completed .session-check {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+  }
+
+  .session-info { flex: 1; min-width: 0; }
+  .session-title { font-weight: 600; font-size: 0.82rem; margin-bottom: 2px; }
+  .session-desc { font-size: 0.75rem; color: var(--text-light); line-height: 1.4; margin-bottom: 4px; }
+
+  .session-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .session-tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+  .tag-elevation { background: #ebf8ff; color: #2b6cb0; }
+  .tag-duration { background: #fefcbf; color: #975a16; }
+  .tag-type { background: #e9d8fd; color: #6b46c1; }
+  .tag-bonus { background: #faf5ff; color: #805ad5; border: 1px solid #e9d8fd; }
+
+  .session-travel { font-size: 0.7rem; color: var(--accent); margin-top: 3px; font-style: italic; }
+  .session-completed-date { font-size: 0.65rem; color: var(--success); margin-top: 3px; font-weight: 500; }
+
+  .week-elev-summary {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    padding: 0.4rem 0.6rem;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-bottom: 0.4rem;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .week-elev-summary strong { color: var(--text); }
+
+  .bonus-note {
+    font-size: 0.7rem;
+    color: var(--bonus);
+    padding: 0.4rem 0.6rem;
+    background: #faf5ff;
+    border-radius: 6px;
+    margin-bottom: 0.4rem;
+    border: 1px dashed #d6bcfa;
+  }
+
+  .undo-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--primary);
+    color: white;
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+  }
+
+  .undo-toast.visible { transform: translateX(-50%) translateY(0); }
+
+  .undo-toast button {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+
+  .phase-divider {
+    text-align: center;
+    padding: 0.75rem 0 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  @keyframes checkPop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+  .check-pop { animation: checkPop 0.3s ease; }
+
+  @media (max-width: 400px) {
+    .header h1 { font-size: 1.1rem; }
+    .stat-value { font-size: 1rem; }
+    .mountain-label .big-number { font-size: 1.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>29029 WHISTLER 2026</h1>
+  <div class="subtitle">Anisa & Arjun - 24-Week Training Plan</div>
+  <div class="countdown" id="countdown"></div>
+  <div class="stats-bar" id="statsBar"></div>
+</div>
+
+<div class="mountain-container">
+  <div class="mountain-progress">
+    <svg class="mountain-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
+      <defs>
+        <clipPath id="mountainClip">
+          <polygon points="0,200 80,120 150,160 220,80 300,40 380,90 440,130 520,70 600,110 600,200"/>
+        </clipPath>
+        <linearGradient id="fillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#38a169;stop-opacity:0.9"/>
+          <stop offset="100%" style="stop-color:#276749;stop-opacity:0.95"/>
+        </linearGradient>
+      </defs>
+      <g clip-path="url(#mountainClip)">
+        <rect class="mountain-fill" id="mountainFill" x="0" width="600" fill="url(#fillGrad)" y="200" height="0"/>
+      </g>
+      <polygon points="0,200 80,120 150,160 220,80 300,40 380,90 440,130 520,70 600,110 600,200" fill="none" stroke="#2d3748" stroke-width="2.5" stroke-linejoin="round"/>
+      <polygon points="280,40 300,40 310,55 290,50" fill="white" opacity="0.8"/>
+    </svg>
+    <div class="mountain-label">
+      <div class="big-number" id="totalElevation">0</div>
+      <div class="big-label">FEET CLIMBED</div>
+    </div>
+  </div>
+</div>
+
+<div class="everest-bar">
+  <div class="everest-track">
+    <div class="everest-fill" id="everestFill" style="width:0%">
+      <span id="everestPct">0%</span>
+    </div>
+  </div>
+  <div class="everest-labels">
+    <span>0 ft</span>
+    <span>Goal: 29,029 ft (1 Everest)</span>
+  </div>
+</div>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" data-tab="current" onclick="switchTab('current')">This Week</button>
+  <button class="nav-tab" data-tab="plan" onclick="switchTab('plan')">Full Plan</button>
+  <button class="nav-tab" data-tab="stats" onclick="switchTab('stats')">Stats</button>
+</div>
+
+<div class="content" id="content"></div>
+
+<div class="undo-toast" id="undoToast">
+  <span>Session completed!</span>
+  <button onclick="undoComplete()">Undo</button>
+</div>
+
+<script>
+// ========================
+// CONFIG
+// ========================
+const EVENT_DATE = new Date('2026-08-22');
+const TRAINING_START = new Date('2026-03-09');
+const ELEVATION_GOAL = 29029; // 1 Everest as training goal
+const STEPS_PER_TRIP = 37;
+const FEET_PER_TRIP = 23; // 37 steps × ~7.5" rise = ~23 ft
+const STONE_MTN_ELEV = 786; // feet per lap
+
+function getWeekDates(weekNum) {
+  const start = new Date(TRAINING_START);
+  start.setDate(start.getDate() + (weekNum - 1) * 7);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${fmt(start)} - ${fmt(end)}`;
+}
+
+function getPhase(week) {
+  if (week <= 4) return { name: 'Getting Started', color: '#38a169' };
+  if (week <= 8) return { name: 'Building Base', color: '#3182ce' };
+  if (week <= 14) return { name: 'Adding Strength', color: '#d69e2e' };
+  if (week <= 19) return { name: 'Building Volume', color: '#e53e3e' };
+  if (week <= 22) return { name: 'Peak Training', color: '#805ad5' };
+  return { name: 'Taper', color: '#38a169' };
+}
+
+// ========================
+// TRAINING PLAN GENERATION
+// ========================
+function generatePlan() {
+  const plan = [];
+  for (let w = 1; w <= 24; w++) {
+    const phase = getPhase(w);
+    plan.push({
+      week: w,
+      phase: phase.name,
+      phaseColor: phase.color,
+      dates: getWeekDates(w),
+      sessions: generateWeekSessions(w, phase.name)
+    });
+  }
+  return plan;
+}
+
+function generateWeekSessions(w, phase) {
+  const s = [];
+
+  if (phase === 'Getting Started') {
+    // Weeks 1-4: Walking + gentle home stairs, 2-3 sessions/week
+    const walkMin = 20 + (w - 1) * 5; // 20, 25, 30, 35 min
+    const stairTrips = 3 + (w - 1) * 2; // 3, 5, 7, 9 trips
+
+    s.push({
+      id: `w${w}s1`,
+      title: 'Neighborhood Walk',
+      desc: `${walkMin}-min walk through Virginia Highlands. Enjoy the route - Monroe Dr, Virginia Ave, or over to Piedmont Park. Conversational pace, no rush.`,
+      elevation: Math.round(walkMin * 3.5),
+      duration: walkMin,
+      type: 'Walk',
+      travel: `${walkMin}-min walk wherever you are. Seek out a few gentle hills if you can find them.`
+    });
+
+    s.push({
+      id: `w${w}s2`,
+      title: `Home Stairs - ${stairTrips} Trips`,
+      desc: `${stairTrips} trips up your staircase (${STEPS_PER_TRIP} steps each). Perfect for a work call or a quick morning routine. Walk down easy between each trip.`,
+      elevation: stairTrips * FEET_PER_TRIP,
+      duration: Math.max(5, Math.round(stairTrips * 1.5)),
+      type: 'Stairs',
+      travel: `${stairTrips} trips up any staircase wherever you're staying. Count ${STEPS_PER_TRIP} steps as one trip.`
+    });
+
+    if (w >= 3) {
+      s.push({
+        id: `w${w}s3`,
+        title: 'Weekend Walk',
+        desc: `${walkMin + 10}-min longer walk. Explore a different route through the neighborhood or walk the BeltLine. Build up your time on feet.`,
+        elevation: Math.round((walkMin + 10) * 3.5),
+        duration: walkMin + 10,
+        type: 'Walk',
+        travel: `${walkMin + 10}-min walk. A park, waterfront, or neighborhood loop all work great.`
+      });
+    }
+
+    // Stone Mountain bonus
+    s.push({
+      id: `w${w}sb`,
+      title: 'Bonus: Stone Mountain',
+      desc: `If you can get out there this week, hike the Walk-Up Trail once (1.3 mi, 786 ft gain). No pressure - this is extra credit! ${w <= 2 ? 'Take it easy and enjoy the views.' : 'Keep a steady comfortable pace.'}`,
+      elevation: STONE_MTN_ELEV,
+      duration: 45,
+      type: 'Bonus',
+      travel: 'Find any local trail with a good hill, or add 34 extra stair trips at home for equivalent elevation.',
+      isBonus: true
+    });
+
+  } else if (phase === 'Building Base') {
+    // Weeks 5-8: Still walking + stairs, 3 sessions/week, more volume
+    const walkMin = 35 + (w - 5) * 5; // 35, 40, 45, 50 min
+    const stairTrips = 10 + (w - 5) * 3; // 10, 13, 16, 19 trips
+
+    s.push({
+      id: `w${w}s1`,
+      title: 'Hill Walk',
+      desc: `${walkMin}-min walk actively seeking hills in Virginia Highlands. Walk up N. Highland Ave, through Atkins Park area, and around the hilly blocks. Push the pace slightly on uphills.`,
+      elevation: Math.round(walkMin * 4.5),
+      duration: walkMin,
+      type: 'Walk',
+      travel: `${walkMin}-min walk prioritizing any hills you can find. Bridges, parking garage ramps, or hilly parks all count.`
+    });
+
+    s.push({
+      id: `w${w}s2`,
+      title: `Home Stairs - ${stairTrips} Trips`,
+      desc: `${stairTrips} trips up your staircase. That's ${stairTrips * FEET_PER_TRIP} ft of climbing! Break into sets if needed - e.g. ${Math.ceil(stairTrips/3)} trips, rest 2 min, repeat. Great for work calls.`,
+      elevation: stairTrips * FEET_PER_TRIP,
+      duration: Math.round(stairTrips * 1.5),
+      type: 'Stairs',
+      travel: `${stairTrips} trips up any staircase. Hotel stairwells are perfect for this.`
+    });
+
+    s.push({
+      id: `w${w}s3`,
+      title: 'Long Walk',
+      desc: `${walkMin + 15}-min walk. This is your longest session of the week. Walk to Piedmont Park, around the loop, and back. Or try a section of the BeltLine with the hills near it.`,
+      elevation: Math.round((walkMin + 15) * 4),
+      duration: walkMin + 15,
+      type: 'Walk',
+      travel: `${walkMin + 15}-min walk anywhere scenic. This is about building time on your feet.`
+    });
+
+    // Stone Mountain bonus - 1-2 laps
+    const smLaps = w >= 7 ? 2 : 1;
+    s.push({
+      id: `w${w}sb`,
+      title: `Bonus: Stone Mountain - ${smLaps} Lap${smLaps > 1 ? 's' : ''}`,
+      desc: `${smLaps === 1 ? 'One lap of the Walk-Up Trail.' : 'Two laps! Hike up, walk down, go again.'} This is great practice for 29029's repeat-lap format. ${smLaps > 1 ? 'Practice eating a snack between laps.' : ''}`,
+      elevation: smLaps * STONE_MTN_ELEV,
+      duration: smLaps * 42 + 10,
+      type: 'Bonus',
+      travel: `Find a local trail or climb ${smLaps * 34} stair trips at home for equivalent elevation.`,
+      isBonus: true
+    });
+
+  } else if (phase === 'Adding Strength') {
+    // Weeks 9-14: Introduce strength, 3-4 sessions/week
+    const walkMin = 45 + (w - 9) * 5; // 45-70 min
+    const stairTrips = 18 + (w - 9) * 3; // 18-33 trips
+    const smLaps = Math.min(2 + Math.floor((w - 9) / 2), 3);
+
+    s.push({
+      id: `w${w}s1`,
+      title: 'Hill Walk',
+      desc: `${walkMin}-min walk hitting every hill in Virginia Highlands. Include the steeper blocks around John Howell Park. Walk briskly on the uphills, easy on the flats.`,
+      elevation: Math.round(walkMin * 5),
+      duration: walkMin,
+      type: 'Walk',
+      travel: `${walkMin}-min hilly walk. Seek inclines actively - bridges, hills, parking ramps.`
+    });
+
+    s.push({
+      id: `w${w}s2`,
+      title: `Home Stairs - ${stairTrips} Trips`,
+      desc: `${stairTrips} trips (${stairTrips * FEET_PER_TRIP} ft). You're getting strong! Try sets of ${Math.ceil(stairTrips/4)} with 90-second rests. Focus on driving through your heels on each step.`,
+      elevation: stairTrips * FEET_PER_TRIP,
+      duration: Math.round(stairTrips * 1.4),
+      type: 'Stairs',
+      travel: `${stairTrips} trips up any staircase. Keep rest intervals consistent.`
+    });
+
+    s.push({
+      id: `w${w}s3`,
+      title: 'Lower Body Strength',
+      desc: `Squats (3x${10 + Math.floor((w-9)/2) * 2}), lunges (3x10 each leg), step-ups on a sturdy chair (3x8 each leg), calf raises (3x15). Take 60s rest between sets.${w >= 12 ? ' Add weight (backpack, dumbbells) if comfortable.' : ' Bodyweight is perfect.'}`,
+      elevation: 0,
+      duration: 25 + (w - 9) * 2,
+      type: 'Strength',
+      travel: 'Bodyweight workout - works anywhere. Use a hotel chair for step-ups.'
+    });
+
+    if (w >= 11) {
+      s.push({
+        id: `w${w}s4`,
+        title: 'Long Walk',
+        desc: `${walkMin + 15}-min walk. Build your endurance for the longer efforts to come. Stay at a comfortable pace you could maintain all day.`,
+        elevation: Math.round((walkMin + 15) * 4.5),
+        duration: walkMin + 15,
+        type: 'Walk',
+        travel: `${walkMin + 15}-min walk. Time on feet is what matters, terrain is secondary.`
+      });
+    }
+
+    s.push({
+      id: `w${w}sb`,
+      title: `Bonus: Stone Mountain - ${smLaps} Laps`,
+      desc: `${smLaps} laps of the Walk-Up Trail (${smLaps * STONE_MTN_ELEV} ft). ${smLaps >= 3 ? 'Three laps is serious work - practice your fueling strategy between laps.' : 'Practice the rhythm of up, down, repeat. This is exactly what 29029 will feel like.'}`,
+      elevation: smLaps * STONE_MTN_ELEV,
+      duration: smLaps * 40 + 15,
+      type: 'Bonus',
+      travel: `Find a local trail or climb ${smLaps * 34} stair trips for equivalent elevation.`,
+      isBonus: true
+    });
+
+  } else if (phase === 'Building Volume') {
+    // Weeks 15-19: More volume, 4 sessions/week
+    const walkMin = 60 + (w - 15) * 5; // 60-80 min
+    const stairTrips = 30 + (w - 15) * 5; // 30-50 trips
+    const smLaps = 3 + Math.floor((w - 15) / 2); // 3-5 laps
+
+    s.push({
+      id: `w${w}s1`,
+      title: 'Hill Repeats',
+      desc: `Find the steepest hill in Virginia Highlands. Walk up briskly ${4 + Math.floor((w-15)/2)} times, walk down easy. Then continue walking on hilly terrain for ${walkMin - 20} min. This builds climbing-specific fitness.`,
+      elevation: Math.round(walkMin * 5.5),
+      duration: walkMin,
+      type: 'Walk',
+      travel: `Find a steep hill or bridge. ${4 + Math.floor((w-15)/2)} repeats, then ${walkMin - 20} min of hilly walking.`
+    });
+
+    s.push({
+      id: `w${w}s2`,
+      title: `Home Stairs - ${stairTrips} Trips`,
+      desc: `${stairTrips} trips (${stairTrips * FEET_PER_TRIP} ft). Break into blocks of ${Math.ceil(stairTrips/5)} trips with 2-min rests. You're now climbing the equivalent of ${(stairTrips * FEET_PER_TRIP / STONE_MTN_ELEV).toFixed(1)} Stone Mountain laps on your own stairs!`,
+      elevation: stairTrips * FEET_PER_TRIP,
+      duration: Math.round(stairTrips * 1.3),
+      type: 'Stairs',
+      travel: `${stairTrips} trips in any stairwell. Split across the day if needed.`
+    });
+
+    s.push({
+      id: `w${w}s3`,
+      title: 'Strength Session',
+      desc: `Weighted squats (3x12), walking lunges (3x12 each), step-ups with pack (3x10 each), calf raises (3x20), plank (3x45s). Use a loaded backpack for weight - this mimics hiking with a pack.`,
+      elevation: 0,
+      duration: 35,
+      type: 'Strength',
+      travel: 'Bodyweight or use whatever weights are available. Hotel gym or room floor both work.'
+    });
+
+    s.push({
+      id: `w${w}s4`,
+      title: 'Long Walk',
+      desc: `${walkMin + 20}-min sustained walk. This is your big weekly effort. Wear comfortable hiking shoes and bring water. Walk with purpose but at a pace you could keep up for hours.`,
+      elevation: Math.round((walkMin + 20) * 4.5),
+      duration: walkMin + 20,
+      type: 'Walk',
+      travel: `${walkMin + 20}-min walk. Bonus points for finding trails or parks with hills.`
+    });
+
+    s.push({
+      id: `w${w}sb`,
+      title: `Bonus: Stone Mountain - ${smLaps} Laps`,
+      desc: `${smLaps} laps (${smLaps * STONE_MTN_ELEV} ft). This is serious 29029 prep. Practice your nutrition, pacing, and mindset. ${smLaps >= 4 ? 'Eat between every lap - exactly what you\'ll do at the event.' : 'Keep your pace consistent across all laps.'}`,
+      elevation: smLaps * STONE_MTN_ELEV,
+      duration: smLaps * 40 + 20,
+      type: 'Bonus',
+      travel: `Major stair day: ${smLaps * 34} home stair trips, or find a local mountain/big hill.`,
+      isBonus: true
+    });
+
+  } else if (phase === 'Peak Training') {
+    // Weeks 20-22: Event simulation, 4-5 sessions/week
+    const stairTrips = 45 + (w - 20) * 10; // 45-65 trips
+    const smLaps = 5 + Math.floor((w - 20) / 2); // 5-6 laps
+
+    s.push({
+      id: `w${w}s1`,
+      title: 'Long Hill Walk',
+      desc: '90-min walk at your target event pace through the hilliest route you can find. Wear your event shoes and pack. This is dress rehearsal walking.',
+      elevation: 500,
+      duration: 90,
+      type: 'Walk',
+      travel: '90-min hilly walk in full event gear. Practice your pacing strategy.'
+    });
+
+    s.push({
+      id: `w${w}s2`,
+      title: `Home Stairs - ${stairTrips} Trips`,
+      desc: `${stairTrips} trips (${stairTrips * FEET_PER_TRIP} ft) - that's ${(stairTrips * FEET_PER_TRIP / STONE_MTN_ELEV).toFixed(1)} Stone Mountains on your home stairs! Break into 5 blocks with rests. Practice your event nutrition during rest breaks.`,
+      elevation: stairTrips * FEET_PER_TRIP,
+      duration: Math.round(stairTrips * 1.3),
+      type: 'Stairs',
+      travel: `${stairTrips} trips in any stairwell. This is a key session - don't skip it.`
+    });
+
+    s.push({
+      id: `w${w}s3`,
+      title: 'Strength - Maintenance',
+      desc: 'Moderate squats (3x10), lunges (3x10 each), step-ups (3x8 each), calf raises (3x15). Keep it lighter than previous weeks - maintain strength without creating fatigue.',
+      elevation: 0,
+      duration: 30,
+      type: 'Strength',
+      travel: 'Bodyweight version anywhere.'
+    });
+
+    s.push({
+      id: `w${w}s4`,
+      title: 'Back-to-Back Walk',
+      desc: 'Day after your big session: 45-min moderate hilly walk on tired legs. At Whistler, you\'ll hike for up to 36 hours. Training on tired legs teaches your body to perform when fatigued.',
+      elevation: 200,
+      duration: 45,
+      type: 'Walk',
+      travel: '45-min walk on tired legs. Any terrain works.'
+    });
+
+    if (w >= 21) {
+      s.push({
+        id: `w${w}s5`,
+        title: 'Extra Stair Session',
+        desc: `25 easy stair trips spread across the day. Can be during work calls, between meetings, or while watching TV. Keep the legs moving.`,
+        elevation: 25 * FEET_PER_TRIP,
+        duration: 30,
+        type: 'Stairs',
+        travel: '25 stair trips spread across the day.'
+      });
+    }
+
+    s.push({
+      id: `w${w}sb`,
+      title: `Bonus: Stone Mountain - ${smLaps} Laps`,
+      desc: `${smLaps} laps (${smLaps * STONE_MTN_ELEV} ft). This is your peak simulation. Eat and drink between every lap exactly as you plan to at Whistler. ${w >= 21 ? 'Try starting one lap before sunrise with a headlamp if possible.' : 'Focus on consistent pacing across all laps.'}`,
+      elevation: smLaps * STONE_MTN_ELEV,
+      duration: smLaps * 40 + 25,
+      type: 'Bonus',
+      travel: `${smLaps * 34} home stair trips with full nutrition strategy. Find the tallest building you can.`,
+      isBonus: true
+    });
+
+  } else {
+    // Taper: Weeks 23-24, 2-3 sessions/week
+    if (w === 23) {
+      s.push({
+        id: `w${w}s1`,
+        title: 'Easy Walk',
+        desc: '40-min easy walk through the neighborhood. Enjoy Virginia Highlands. This is about staying loose, not building fitness. You\'ve done the work.',
+        elevation: 120,
+        duration: 40,
+        type: 'Walk',
+        travel: '40-min easy walk anywhere.'
+      });
+      s.push({
+        id: `w${w}s2`,
+        title: 'Home Stairs - 15 Easy Trips',
+        desc: '15 trips at easy effort. Focus on form: upright posture, heel drive, steady breathing. This is a shakeout, not a workout.',
+        elevation: 15 * FEET_PER_TRIP,
+        duration: 15,
+        type: 'Stairs',
+        travel: '15 easy stair trips.'
+      });
+      s.push({
+        id: `w${w}sb`,
+        title: 'Bonus: Stone Mountain - 2 Easy Laps',
+        desc: '2 laps at conversational pace. Enjoy the views. Visualize your event day. This is your farewell training hike before Whistler.',
+        elevation: 2 * STONE_MTN_ELEV,
+        duration: 90,
+        type: 'Bonus',
+        travel: 'Easy 1,500 ft of stairs or a moderate local hike. Keep it fun.',
+        isBonus: true
+      });
+    } else {
+      s.push({
+        id: `w${w}s1`,
+        title: 'Shakeout Walk',
+        desc: '25-min flat easy walk. BeltLine or Piedmont Park. Focus on rest, hydration, and nutrition this week. Your body is ready.',
+        elevation: 40,
+        duration: 25,
+        type: 'Walk',
+        travel: '25-min easy flat walk.'
+      });
+      s.push({
+        id: `w${w}s2`,
+        title: '10 Easy Stair Trips + Stretch',
+        desc: '10 trips then 10 min of stretching. Keep everything loose and fresh. Pack your bags. Review your event plan.',
+        elevation: 10 * FEET_PER_TRIP,
+        duration: 20,
+        type: 'Stairs',
+        travel: '10 stair trips + stretching.'
+      });
+      s.push({
+        id: `w${w}s3`,
+        title: 'Rest & Visualize',
+        desc: 'No workout. Spend 15 min visualizing your event. See yourselves finishing each lap together. You\'ve earned this. Go crush Whistler!',
+        elevation: 0,
+        duration: 15,
+        type: 'Recovery',
+        travel: 'Rest day. Visualize success. You\'re ready.'
+      });
+    }
+  }
+
+  return s;
+}
+
+const TRAINING_PLAN = generatePlan();
+
+// ========================
+// APP STATE
+// ========================
+let currentTab = 'current';
+let completions = {};
+let lastCompleted = null;
+let undoTimeout = null;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('29029_anisa_arjun');
+    if (saved) completions = JSON.parse(saved);
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('29029_anisa_arjun', JSON.stringify(completions));
+}
+
+function isComplete(id) { return !!completions[id]; }
+
+function toggleSession(id) {
+  if (completions[id]) {
+    delete completions[id];
+    lastCompleted = null;
+  } else {
+    completions[id] = { at: new Date().toISOString() };
+    lastCompleted = id;
+    showUndoToast();
+  }
+  saveState();
+  render();
+}
+
+function undoComplete() {
+  if (lastCompleted) {
+    delete completions[lastCompleted];
+    lastCompleted = null;
+    hideUndoToast();
+    saveState();
+    render();
+  }
+}
+
+function showUndoToast() {
+  clearTimeout(undoTimeout);
+  document.getElementById('undoToast').classList.add('visible');
+  undoTimeout = setTimeout(hideUndoToast, 4000);
+}
+
+function hideUndoToast() {
+  clearTimeout(undoTimeout);
+  document.getElementById('undoToast').classList.remove('visible');
+}
+
+// ========================
+// CALCULATIONS
+// ========================
+function getCurrentWeek() {
+  const now = new Date();
+  const diff = now - TRAINING_START;
+  return Math.max(1, Math.min(24, Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1));
+}
+
+function getTotalElevation() {
+  let total = 0;
+  TRAINING_PLAN.forEach(week => {
+    week.sessions.forEach(session => {
+      if (completions[session.id]) total += session.elevation;
+    });
+  });
+  return total;
+}
+
+function getTotalSessions() {
+  let completed = 0, total = 0;
+  TRAINING_PLAN.forEach(week => {
+    week.sessions.forEach(session => {
+      if (!session.isBonus) total++;
+      if (completions[session.id]) completed++;
+    });
+  });
+  return { completed, total };
+}
+
+function getWeekStats(weekNum) {
+  const week = TRAINING_PLAN[weekNum - 1];
+  let completed = 0, elevation = 0, totalElevation = 0, totalSessions = 0;
+  week.sessions.forEach(session => {
+    if (!session.isBonus) totalSessions++;
+    totalElevation += session.elevation;
+    if (completions[session.id]) {
+      completed++;
+      elevation += session.elevation;
+    }
+  });
+  return { completed, total: totalSessions, elevation, totalElevation };
+}
+
+function getDaysUntilEvent() {
+  return Math.max(0, Math.ceil((EVENT_DATE - new Date()) / (24 * 60 * 60 * 1000)));
+}
+
+// ========================
+// RENDERING
+// ========================
+function render() {
+  renderHeader();
+  renderMountain();
+  renderEverest();
+  renderContent();
+}
+
+function renderHeader() {
+  const days = getDaysUntilEvent();
+  document.getElementById('countdown').innerHTML =
+    `<strong>${days}</strong> days (${Math.floor(days/7)} weeks) to Whistler`;
+
+  const totalElev = getTotalElevation();
+  const { completed, total } = getTotalSessions();
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-item">
+      <div class="stat-value">${completed}/${total}</div>
+      <div class="stat-label">Sessions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">${(totalElev / 29029 * 100).toFixed(0)}%</div>
+      <div class="stat-label">Everest</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">Wk ${getCurrentWeek()}</div>
+      <div class="stat-label">Current</div>
+    </div>
+  `;
+}
+
+function renderMountain() {
+  const totalElev = getTotalElevation();
+  const pct = Math.min(100, (totalElev / ELEVATION_GOAL) * 100);
+  const fill = document.getElementById('mountainFill');
+  fill.setAttribute('y', 200 - pct * 2);
+  fill.setAttribute('height', pct * 2);
+  document.getElementById('totalElevation').textContent = totalElev.toLocaleString();
+}
+
+function renderEverest() {
+  const totalElev = getTotalElevation();
+  const pct = Math.min(100, (totalElev / ELEVATION_GOAL) * 100);
+  document.getElementById('everestFill').style.width = pct + '%';
+  document.getElementById('everestPct').textContent = pct.toFixed(1) + '%';
+}
+
+function renderContent() {
+  const content = document.getElementById('content');
+  if (currentTab === 'current') renderCurrentWeek(content);
+  else if (currentTab === 'plan') renderFullPlan(content);
+  else renderStats(content);
+}
+
+function renderCurrentWeek(container) {
+  const cw = getCurrentWeek();
+  const week = TRAINING_PLAN[cw - 1];
+  const stats = getWeekStats(cw);
+  const phase = getPhase(cw);
+
+  container.innerHTML = `
+    <div class="week-card current-week expanded">
+      <div class="week-header">
+        <div class="week-header-left">
+          <div class="week-title">Week ${cw}</div>
+          <div class="week-phase" style="color:${phase.color}">${phase.name}</div>
+          <div class="week-dates">${week.dates}</div>
+        </div>
+        <div class="week-header-right">
+          <div class="week-progress-mini ${stats.completed >= stats.total ? 'complete' : ''}">${stats.completed}/${stats.total}</div>
+        </div>
+      </div>
+      <div class="week-sessions" style="display:block">
+        <div class="week-elev-summary">
+          <span>Elevation: <strong>${stats.elevation.toLocaleString()} ft</strong></span>
+          <span>Possible: ${stats.totalElevation.toLocaleString()} ft</span>
+        </div>
+        ${week.sessions.filter(s => !s.isBonus).map(s => renderSession(s)).join('')}
+        <div class="bonus-note">Bonus sessions below are optional - great if you can fit them in!</div>
+        ${week.sessions.filter(s => s.isBonus).map(s => renderSession(s)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderFullPlan(container) {
+  let html = '';
+  let lastPhase = '';
+  const cw = getCurrentWeek();
+
+  TRAINING_PLAN.forEach(week => {
+    const phase = getPhase(week.week);
+    if (phase.name !== lastPhase) {
+      html += `<div class="phase-divider" style="color:${phase.color}">Phase: ${phase.name}</div>`;
+      lastPhase = phase.name;
+    }
+    const stats = getWeekStats(week.week);
+    const isCurrentWeek = week.week === cw;
+    const coreDone = stats.completed >= stats.total;
+
+    html += `
+      <div class="week-card ${isCurrentWeek ? 'current-week' : ''} ${coreDone ? 'fully-complete' : ''} ${isCurrentWeek ? 'expanded' : ''}" id="week-${week.week}">
+        <div class="week-header" onclick="toggleWeek(${week.week})">
+          <div class="week-header-left">
+            <div class="week-title">Week ${week.week}</div>
+            <div class="week-phase" style="color:${phase.color}">${phase.name}</div>
+            <div class="week-dates">${week.dates}</div>
+          </div>
+          <div class="week-header-right">
+            <div class="week-progress-mini ${coreDone ? 'complete' : ''}">${stats.completed}/${stats.total}</div>
+            <div class="week-chevron">&#9660;</div>
+          </div>
+        </div>
+        <div class="week-sessions">
+          <div class="week-elev-summary">
+            <span>Elevation: <strong>${stats.elevation.toLocaleString()}</strong> ft</span>
+          </div>
+          ${week.sessions.filter(s => !s.isBonus).map(s => renderSession(s)).join('')}
+          <div class="bonus-note">Bonus - optional</div>
+          ${week.sessions.filter(s => s.isBonus).map(s => renderSession(s)).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderSession(session) {
+  const done = isComplete(session.id);
+  const completedAt = done ? new Date(completions[session.id].at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+
+  return `
+    <div class="session-card ${done ? 'completed' : ''} ${session.isBonus ? 'bonus-session' : ''}" onclick="toggleSession('${session.id}')">
+      <div class="session-check ${done ? 'check-pop' : ''}">${done ? '&#10003;' : ''}</div>
+      <div class="session-info">
+        <div class="session-title">${session.title}</div>
+        <div class="session-desc">${session.desc}</div>
+        <div class="session-meta">
+          ${session.elevation > 0 ? `<span class="session-tag tag-elevation">${session.elevation.toLocaleString()} ft</span>` : ''}
+          <span class="session-tag tag-duration">${session.duration} min</span>
+          <span class="session-tag ${session.isBonus ? 'tag-bonus' : 'tag-type'}">${session.type}</span>
+        </div>
+        <div class="session-travel">Away from home? ${session.travel}</div>
+        ${done ? `<div class="session-completed-date">Completed ${completedAt}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderStats(container) {
+  const totalElev = getTotalElevation();
+  const { completed, total } = getTotalSessions();
+
+  let weeklyHtml = '';
+  for (let w = 1; w <= 24; w++) {
+    const stats = getWeekStats(w);
+    const isCurrent = w === getCurrentWeek();
+    const maxElev = 3500; // rough max weekly elevation for bar scaling
+    const pct = Math.min(100, stats.elevation / maxElev * 100);
+    weeklyHtml += `
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;${isCurrent ? 'font-weight:700;' : ''}">
+        <span style="width:40px;font-size:0.72rem;color:${isCurrent ? 'var(--accent)' : 'var(--text-light)'}">Wk ${w}</span>
+        <div style="flex:1;height:16px;background:var(--border);border-radius:8px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${stats.completed >= stats.total && stats.total > 0 ? 'var(--success)' : 'var(--accent)'};border-radius:8px;transition:width 0.3s"></div>
+        </div>
+        <span style="width:65px;font-size:0.68rem;text-align:right;color:var(--text-light)">${stats.elevation.toLocaleString()} ft</span>
+      </div>
+    `;
+  }
+
+  const milestones = [
+    { label: 'First 1,000 ft', target: 1000 },
+    { label: '5,000 ft', target: 5000 },
+    { label: '10,000 ft', target: 10000 },
+    { label: 'Half Everest (14,515 ft)', target: 14515 },
+    { label: '1 Everest (29,029 ft)', target: 29029 }
+  ];
+
+  const stoneEquiv = Math.floor(totalElev / STONE_MTN_ELEV);
+  const stairTripsEquiv = Math.round(totalElev / FEET_PER_TRIP);
+
+  container.innerHTML = `
+    <div style="background:var(--card);border-radius:12px;padding:1.1rem;margin-bottom:0.75rem;box-shadow:var(--shadow)">
+      <h3 style="font-size:0.95rem;margin-bottom:0.75rem">Overall Progress</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div style="text-align:center;padding:0.75rem;background:var(--bg);border-radius:8px">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--primary)">${totalElev.toLocaleString()}</div>
+          <div style="font-size:0.65rem;color:var(--text-light);text-transform:uppercase">Total Feet</div>
+        </div>
+        <div style="text-align:center;padding:0.75rem;background:var(--bg);border-radius:8px">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--accent)">${(totalElev / 29029 * 100).toFixed(1)}%</div>
+          <div style="font-size:0.65rem;color:var(--text-light);text-transform:uppercase">Of Everest</div>
+        </div>
+        <div style="text-align:center;padding:0.75rem;background:var(--bg);border-radius:8px">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--success)">${completed}</div>
+          <div style="font-size:0.65rem;color:var(--text-light);text-transform:uppercase">Sessions Done</div>
+        </div>
+        <div style="text-align:center;padding:0.75rem;background:var(--bg);border-radius:8px">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--bonus)">${stoneEquiv}</div>
+          <div style="font-size:0.65rem;color:var(--text-light);text-transform:uppercase">Stone Mtns</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.1rem;margin-bottom:0.75rem;box-shadow:var(--shadow)">
+      <h3 style="font-size:0.95rem;margin-bottom:0.5rem">Milestones</h3>
+      ${milestones.map(m => {
+        const done = totalElev >= m.target;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px;background:${done ? '#f0fff4' : 'var(--bg)'};margin-bottom:3px">
+          <span style="font-size:1.1rem">${done ? '&#9989;' : '&#9744;'}</span>
+          <span style="flex:1;font-size:0.8rem;${done ? 'color:var(--success)' : ''}">${m.label}</span>
+          <span style="font-size:0.7rem;color:var(--text-light)">${m.target.toLocaleString()} ft</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.1rem;margin-bottom:0.75rem;box-shadow:var(--shadow)">
+      <h3 style="font-size:0.95rem;margin-bottom:0.5rem">Fun Facts</h3>
+      <div style="font-size:0.8rem;color:var(--text-light);line-height:1.6">
+        Total home stair trips equivalent: <strong style="color:var(--text)">${stairTripsEquiv.toLocaleString()}</strong><br>
+        Stone Mountain equivalents: <strong style="color:var(--text)">${stoneEquiv}</strong> laps<br>
+        That's <strong style="color:var(--text)">${(totalElev * 0.3048).toFixed(0).toLocaleString()}</strong> meters of climbing
+      </div>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.1rem;box-shadow:var(--shadow)">
+      <h3 style="font-size:0.95rem;margin-bottom:0.5rem">Weekly Elevation</h3>
+      ${weeklyHtml}
+    </div>
+  `;
+}
+
+// ========================
+// INTERACTIONS
+// ========================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  renderContent();
+}
+
+function toggleWeek(weekNum) {
+  const card = document.getElementById(`week-${weekNum}`);
+  if (card) card.classList.toggle('expanded');
+}
+
+// ========================
+// INIT
+// ========================
+loadState();
+render();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
