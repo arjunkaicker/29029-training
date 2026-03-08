@@ -216,6 +216,7 @@
   .session-card:hover { border-color: var(--border); }
   .session-card.completed { background: #f0fff4; border-color: #c6f6d5; }
   .session-card.bonus-session { border-left: 3px solid var(--bonus); }
+  .session-card.custom-session { border-left: 3px solid var(--accent); }
 
   .session-check {
     width: 26px;
@@ -248,6 +249,7 @@
   .tag-duration { background: #fefcbf; color: #975a16; }
   .tag-type { background: #e9d8fd; color: #6b46c1; }
   .tag-bonus { background: #faf5ff; color: #805ad5; border: 1px solid #e9d8fd; }
+  .tag-actual { background: #c6f6d5; color: #276749; }
 
   .session-travel { font-size: 0.7rem; color: var(--accent); margin-top: 3px; font-style: italic; }
   .session-completed-date { font-size: 0.65rem; color: var(--success); margin-top: 3px; font-weight: 500; }
@@ -274,6 +276,114 @@
     margin-bottom: 0.4rem;
     border: 1px dashed #d6bcfa;
   }
+
+  .add-activity-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.6rem;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.4rem;
+  }
+
+  .add-activity-btn:hover { border-color: var(--accent); color: var(--accent); background: #fffaf0; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-overlay.visible { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 1rem 1.25rem;
+  }
+
+  .modal-header h3 { font-size: 1rem; margin-bottom: 2px; }
+  .modal-header p { font-size: 0.75rem; opacity: 0.85; }
+
+  .modal-body { padding: 1.25rem; }
+
+  .modal-field { margin-bottom: 1rem; }
+  .modal-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .modal-field input, .modal-field select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-appearance: none;
+  }
+
+  .modal-field input:focus, .modal-field select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .modal-field .hint { font-size: 0.7rem; color: var(--text-light); margin-top: 3px; }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 1.25rem 1.25rem;
+  }
+
+  .modal-btn {
+    flex: 1;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .modal-btn-cancel { background: var(--border); color: var(--text-light); }
+  .modal-btn-cancel:hover { background: #cbd5e0; }
+  .modal-btn-save { background: var(--success); color: white; }
+  .modal-btn-save:hover { background: #2f855a; }
+  .modal-btn-delete { background: #fed7d7; color: #c53030; }
+  .modal-btn-delete:hover { background: #feb2b2; }
 
   .undo-toast {
     position: fixed;
@@ -380,8 +490,68 @@
 <div class="content" id="content"></div>
 
 <div class="undo-toast" id="undoToast">
-  <span>Session completed!</span>
+  <span id="undoMsg">Session logged!</span>
   <button onclick="undoComplete()">Undo</button>
+</div>
+
+<!-- Completion Modal -->
+<div class="modal-overlay" id="completeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Log Session</h3>
+      <p id="modalSubtitle">How did it go?</p>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!-- Add Activity Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header" style="background:linear-gradient(135deg, var(--accent), var(--accent-light))">
+      <h3>Add Extra Activity</h3>
+      <p>Log a walk, stairs, or anything else</p>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Activity Type</label>
+        <select id="addType" onchange="onAddTypeChange()">
+          <option value="walk">Walk</option>
+          <option value="stairs">Home Stairs</option>
+          <option value="stone_mtn">Stone Mountain</option>
+          <option value="other">Other Activity</option>
+        </select>
+      </div>
+      <div class="modal-field" id="addMinutesField">
+        <label>Duration (minutes)</label>
+        <input type="number" id="addMinutes" value="30" min="1" inputmode="numeric">
+      </div>
+      <div class="modal-field" id="addTripsField" style="display:none">
+        <label>Stair Trips</label>
+        <input type="number" id="addTrips" value="10" min="1" inputmode="numeric">
+        <div class="hint">Each trip = 37 steps (~23 ft elevation)</div>
+      </div>
+      <div class="modal-field" id="addLapsField" style="display:none">
+        <label>Stone Mountain Laps</label>
+        <input type="number" id="addLaps" value="1" min="1" inputmode="numeric">
+        <div class="hint">Each lap = 786 ft elevation</div>
+      </div>
+      <div class="modal-field" id="addElevField" style="display:none">
+        <label>Elevation Gain (feet)</label>
+        <input type="number" id="addElev" value="0" min="0" inputmode="numeric">
+        <div class="hint">Estimate if you're not sure. Any amount counts!</div>
+      </div>
+      <div class="modal-field">
+        <label>Notes (optional)</label>
+        <input type="text" id="addNotes" placeholder="e.g. BeltLine walk, hotel stairs...">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="modal-btn modal-btn-save" onclick="saveCustomActivity()">Log It!</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -390,10 +560,10 @@
 // ========================
 const EVENT_DATE = new Date('2026-08-22');
 const TRAINING_START = new Date('2026-03-09');
-const ELEVATION_GOAL = 29029; // 1 Everest as training goal
+const ELEVATION_GOAL = 29029;
 const STEPS_PER_TRIP = 37;
-const FEET_PER_TRIP = 23; // 37 steps × ~7.5" rise = ~23 ft
-const STONE_MTN_ELEV = 786; // feet per lap
+const FEET_PER_TRIP = 23;
+const STONE_MTN_ELEV = 786;
 
 function getWeekDates(weekNum) {
   const start = new Date(TRAINING_START);
@@ -402,6 +572,12 @@ function getWeekDates(weekNum) {
   end.setDate(end.getDate() + 6);
   const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   return `${fmt(start)} - ${fmt(end)}`;
+}
+
+function getWeekStartDate(weekNum) {
+  const start = new Date(TRAINING_START);
+  start.setDate(start.getDate() + (weekNum - 1) * 7);
+  return start;
 }
 
 function getPhase(week) {
@@ -435,9 +611,10 @@ function generateWeekSessions(w, phase) {
   const s = [];
 
   if (phase === 'Getting Started') {
-    // Weeks 1-4: Walking + gentle home stairs, 2-3 sessions/week
-    const walkMin = 20 + (w - 1) * 5; // 20, 25, 30, 35 min
+    // Weeks 1-4: Walking + gentle home stairs
+    const walkMin = 20 + (w - 1) * 5; // 20, 25, 30, 35 min weekday
     const stairTrips = 3 + (w - 1) * 2; // 3, 5, 7, 9 trips
+    const weekendMin = 60 + (w - 1) * 5; // 60, 65, 70, 75 min weekend
 
     s.push({
       id: `w${w}s1`,
@@ -446,6 +623,7 @@ function generateWeekSessions(w, phase) {
       elevation: Math.round(walkMin * 3.5),
       duration: walkMin,
       type: 'Walk',
+      elevPerMin: 3.5,
       travel: `${walkMin}-min walk wherever you are. Seek out a few gentle hills if you can find them.`
     });
 
@@ -456,20 +634,20 @@ function generateWeekSessions(w, phase) {
       elevation: stairTrips * FEET_PER_TRIP,
       duration: Math.max(5, Math.round(stairTrips * 1.5)),
       type: 'Stairs',
+      plannedTrips: stairTrips,
       travel: `${stairTrips} trips up any staircase wherever you're staying. Count ${STEPS_PER_TRIP} steps as one trip.`
     });
 
-    if (w >= 3) {
-      s.push({
-        id: `w${w}s3`,
-        title: 'Weekend Walk',
-        desc: `${walkMin + 10}-min longer walk. Explore a different route through the neighborhood or walk the BeltLine. Build up your time on feet.`,
-        elevation: Math.round((walkMin + 10) * 3.5),
-        duration: walkMin + 10,
-        type: 'Walk',
-        travel: `${walkMin + 10}-min walk. A park, waterfront, or neighborhood loop all work great.`
-      });
-    }
+    s.push({
+      id: `w${w}s3`,
+      title: 'Weekend Walk',
+      desc: `${weekendMin}-min longer walk. Your big weekly effort! Explore a different route through the neighborhood, walk the BeltLine, or try Piedmont Park's full loop.`,
+      elevation: Math.round(weekendMin * 3.5),
+      duration: weekendMin,
+      type: 'Walk',
+      elevPerMin: 3.5,
+      travel: `${weekendMin}-min walk. A park, waterfront, or neighborhood loop all work great.`
+    });
 
     // Stone Mountain bonus
     s.push({
@@ -484,9 +662,11 @@ function generateWeekSessions(w, phase) {
     });
 
   } else if (phase === 'Building Base') {
-    // Weeks 5-8: Still walking + stairs, 3 sessions/week, more volume
+    // Weeks 5-8: Walking + stairs, 3 sessions/week
     const walkMin = 35 + (w - 5) * 5; // 35, 40, 45, 50 min
     const stairTrips = 10 + (w - 5) * 3; // 10, 13, 16, 19 trips
+    const weekendMin = 75 + (w - 5) * 5; // 75, 80, 85, 90 min
+    const smLaps = w >= 7 ? 2 : 1;
 
     s.push({
       id: `w${w}s1`,
@@ -495,6 +675,7 @@ function generateWeekSessions(w, phase) {
       elevation: Math.round(walkMin * 4.5),
       duration: walkMin,
       type: 'Walk',
+      elevPerMin: 4.5,
       travel: `${walkMin}-min walk prioritizing any hills you can find. Bridges, parking garage ramps, or hilly parks all count.`
     });
 
@@ -505,21 +686,21 @@ function generateWeekSessions(w, phase) {
       elevation: stairTrips * FEET_PER_TRIP,
       duration: Math.round(stairTrips * 1.5),
       type: 'Stairs',
+      plannedTrips: stairTrips,
       travel: `${stairTrips} trips up any staircase. Hotel stairwells are perfect for this.`
     });
 
     s.push({
       id: `w${w}s3`,
-      title: 'Long Walk',
-      desc: `${walkMin + 15}-min walk. This is your longest session of the week. Walk to Piedmont Park, around the loop, and back. Or try a section of the BeltLine with the hills near it.`,
-      elevation: Math.round((walkMin + 15) * 4),
-      duration: walkMin + 15,
+      title: 'Weekend Walk',
+      desc: `${weekendMin}-min walk - your longest session of the week! Walk to Piedmont Park, around the loop, and back. Or try a section of the BeltLine with the hills near it.`,
+      elevation: Math.round(weekendMin * 4),
+      duration: weekendMin,
       type: 'Walk',
-      travel: `${walkMin + 15}-min walk anywhere scenic. This is about building time on your feet.`
+      elevPerMin: 4,
+      travel: `${weekendMin}-min walk anywhere scenic. This is about building time on your feet.`
     });
 
-    // Stone Mountain bonus - 1-2 laps
-    const smLaps = w >= 7 ? 2 : 1;
     s.push({
       id: `w${w}sb`,
       title: `Bonus: Stone Mountain - ${smLaps} Lap${smLaps > 1 ? 's' : ''}`,
@@ -533,8 +714,9 @@ function generateWeekSessions(w, phase) {
 
   } else if (phase === 'Adding Strength') {
     // Weeks 9-14: Introduce strength, 3-4 sessions/week
-    const walkMin = 45 + (w - 9) * 5; // 45-70 min
-    const stairTrips = 18 + (w - 9) * 3; // 18-33 trips
+    const walkMin = 45 + (w - 9) * 5;
+    const stairTrips = 18 + (w - 9) * 3;
+    const weekendMin = 90 + (w - 9) * 5; // 90-115 min
     const smLaps = Math.min(2 + Math.floor((w - 9) / 2), 3);
 
     s.push({
@@ -544,6 +726,7 @@ function generateWeekSessions(w, phase) {
       elevation: Math.round(walkMin * 5),
       duration: walkMin,
       type: 'Walk',
+      elevPerMin: 5,
       travel: `${walkMin}-min hilly walk. Seek inclines actively - bridges, hills, parking ramps.`
     });
 
@@ -554,6 +737,7 @@ function generateWeekSessions(w, phase) {
       elevation: stairTrips * FEET_PER_TRIP,
       duration: Math.round(stairTrips * 1.4),
       type: 'Stairs',
+      plannedTrips: stairTrips,
       travel: `${stairTrips} trips up any staircase. Keep rest intervals consistent.`
     });
 
@@ -567,17 +751,16 @@ function generateWeekSessions(w, phase) {
       travel: 'Bodyweight workout - works anywhere. Use a hotel chair for step-ups.'
     });
 
-    if (w >= 11) {
-      s.push({
-        id: `w${w}s4`,
-        title: 'Long Walk',
-        desc: `${walkMin + 15}-min walk. Build your endurance for the longer efforts to come. Stay at a comfortable pace you could maintain all day.`,
-        elevation: Math.round((walkMin + 15) * 4.5),
-        duration: walkMin + 15,
-        type: 'Walk',
-        travel: `${walkMin + 15}-min walk. Time on feet is what matters, terrain is secondary.`
-      });
-    }
+    s.push({
+      id: `w${w}s4`,
+      title: 'Weekend Walk',
+      desc: `${weekendMin}-min walk - your big weekly effort. Wear comfortable hiking shoes and bring water. Stay at a comfortable pace you could maintain all day.`,
+      elevation: Math.round(weekendMin * 4.5),
+      duration: weekendMin,
+      type: 'Walk',
+      elevPerMin: 4.5,
+      travel: `${weekendMin}-min walk. Time on feet is what matters, terrain is secondary.`
+    });
 
     s.push({
       id: `w${w}sb`,
@@ -592,9 +775,10 @@ function generateWeekSessions(w, phase) {
 
   } else if (phase === 'Building Volume') {
     // Weeks 15-19: More volume, 4 sessions/week
-    const walkMin = 60 + (w - 15) * 5; // 60-80 min
-    const stairTrips = 30 + (w - 15) * 5; // 30-50 trips
-    const smLaps = 3 + Math.floor((w - 15) / 2); // 3-5 laps
+    const walkMin = 60 + (w - 15) * 5;
+    const stairTrips = 30 + (w - 15) * 5;
+    const weekendMin = 105 + (w - 15) * 5; // 105-125 min
+    const smLaps = 3 + Math.floor((w - 15) / 2);
 
     s.push({
       id: `w${w}s1`,
@@ -603,6 +787,7 @@ function generateWeekSessions(w, phase) {
       elevation: Math.round(walkMin * 5.5),
       duration: walkMin,
       type: 'Walk',
+      elevPerMin: 5.5,
       travel: `Find a steep hill or bridge. ${4 + Math.floor((w-15)/2)} repeats, then ${walkMin - 20} min of hilly walking.`
     });
 
@@ -613,13 +798,14 @@ function generateWeekSessions(w, phase) {
       elevation: stairTrips * FEET_PER_TRIP,
       duration: Math.round(stairTrips * 1.3),
       type: 'Stairs',
+      plannedTrips: stairTrips,
       travel: `${stairTrips} trips in any stairwell. Split across the day if needed.`
     });
 
     s.push({
       id: `w${w}s3`,
       title: 'Strength Session',
-      desc: `Weighted squats (3x12), walking lunges (3x12 each), step-ups with pack (3x10 each), calf raises (3x20), plank (3x45s). Use a loaded backpack for weight - this mimics hiking with a pack.`,
+      desc: 'Weighted squats (3x12), walking lunges (3x12 each), step-ups with pack (3x10 each), calf raises (3x20), plank (3x45s). Use a loaded backpack for weight - this mimics hiking with a pack.',
       elevation: 0,
       duration: 35,
       type: 'Strength',
@@ -628,12 +814,13 @@ function generateWeekSessions(w, phase) {
 
     s.push({
       id: `w${w}s4`,
-      title: 'Long Walk',
-      desc: `${walkMin + 20}-min sustained walk. This is your big weekly effort. Wear comfortable hiking shoes and bring water. Walk with purpose but at a pace you could keep up for hours.`,
-      elevation: Math.round((walkMin + 20) * 4.5),
-      duration: walkMin + 20,
+      title: 'Weekend Walk',
+      desc: `${weekendMin}-min sustained walk. This is your big weekly effort! Wear comfortable hiking shoes and bring water. Walk with purpose but at a pace you could keep up for hours.`,
+      elevation: Math.round(weekendMin * 4.5),
+      duration: weekendMin,
       type: 'Walk',
-      travel: `${walkMin + 20}-min walk. Bonus points for finding trails or parks with hills.`
+      elevPerMin: 4.5,
+      travel: `${weekendMin}-min walk. Bonus points for finding trails or parks with hills.`
     });
 
     s.push({
@@ -648,9 +835,10 @@ function generateWeekSessions(w, phase) {
     });
 
   } else if (phase === 'Peak Training') {
-    // Weeks 20-22: Event simulation, 4-5 sessions/week
-    const stairTrips = 45 + (w - 20) * 10; // 45-65 trips
-    const smLaps = 5 + Math.floor((w - 20) / 2); // 5-6 laps
+    // Weeks 20-22
+    const stairTrips = 45 + (w - 20) * 10;
+    const weekendMin = 120;
+    const smLaps = 5 + Math.floor((w - 20) / 2);
 
     s.push({
       id: `w${w}s1`,
@@ -659,6 +847,7 @@ function generateWeekSessions(w, phase) {
       elevation: 500,
       duration: 90,
       type: 'Walk',
+      elevPerMin: 5.5,
       travel: '90-min hilly walk in full event gear. Practice your pacing strategy.'
     });
 
@@ -669,6 +858,7 @@ function generateWeekSessions(w, phase) {
       elevation: stairTrips * FEET_PER_TRIP,
       duration: Math.round(stairTrips * 1.3),
       type: 'Stairs',
+      plannedTrips: stairTrips,
       travel: `${stairTrips} trips in any stairwell. This is a key session - don't skip it.`
     });
 
@@ -684,23 +874,25 @@ function generateWeekSessions(w, phase) {
 
     s.push({
       id: `w${w}s4`,
-      title: 'Back-to-Back Walk',
-      desc: 'Day after your big session: 45-min moderate hilly walk on tired legs. At Whistler, you\'ll hike for up to 36 hours. Training on tired legs teaches your body to perform when fatigued.',
-      elevation: 200,
-      duration: 45,
+      title: 'Weekend Walk',
+      desc: `${weekendMin}-min sustained walk on the hilliest route you know. Wear your event gear. This is your final big test before taper.`,
+      elevation: Math.round(weekendMin * 5),
+      duration: weekendMin,
       type: 'Walk',
-      travel: '45-min walk on tired legs. Any terrain works.'
+      elevPerMin: 5,
+      travel: `${weekendMin}-min walk. Find the hilliest terrain available.`
     });
 
     if (w >= 21) {
       s.push({
         id: `w${w}s5`,
-        title: 'Extra Stair Session',
-        desc: `25 easy stair trips spread across the day. Can be during work calls, between meetings, or while watching TV. Keep the legs moving.`,
-        elevation: 25 * FEET_PER_TRIP,
-        duration: 30,
-        type: 'Stairs',
-        travel: '25 stair trips spread across the day.'
+        title: 'Back-to-Back Walk',
+        desc: 'Day after your big session: 45-min moderate hilly walk on tired legs. At Whistler, you\'ll hike for up to 36 hours. Training on tired legs teaches your body to perform when fatigued.',
+        elevation: 200,
+        duration: 45,
+        type: 'Walk',
+        elevPerMin: 4.5,
+        travel: '45-min walk on tired legs. Any terrain works.'
       });
     }
 
@@ -716,7 +908,7 @@ function generateWeekSessions(w, phase) {
     });
 
   } else {
-    // Taper: Weeks 23-24, 2-3 sessions/week
+    // Taper: Weeks 23-24
     if (w === 23) {
       s.push({
         id: `w${w}s1`,
@@ -725,6 +917,7 @@ function generateWeekSessions(w, phase) {
         elevation: 120,
         duration: 40,
         type: 'Walk',
+        elevPerMin: 3,
         travel: '40-min easy walk anywhere.'
       });
       s.push({
@@ -734,6 +927,7 @@ function generateWeekSessions(w, phase) {
         elevation: 15 * FEET_PER_TRIP,
         duration: 15,
         type: 'Stairs',
+        plannedTrips: 15,
         travel: '15 easy stair trips.'
       });
       s.push({
@@ -754,6 +948,7 @@ function generateWeekSessions(w, phase) {
         elevation: 40,
         duration: 25,
         type: 'Walk',
+        elevPerMin: 1.5,
         travel: '25-min easy flat walk.'
       });
       s.push({
@@ -763,6 +958,7 @@ function generateWeekSessions(w, phase) {
         elevation: 10 * FEET_PER_TRIP,
         duration: 20,
         type: 'Stairs',
+        plannedTrips: 10,
         travel: '10 stair trips + stretching.'
       });
       s.push({
@@ -787,38 +983,300 @@ const TRAINING_PLAN = generatePlan();
 // ========================
 let currentTab = 'current';
 let completions = {};
+let customActivities = {};
 let lastCompleted = null;
 let undoTimeout = null;
+let activeModalSession = null;
+let activeModalWeek = null;
 
 function loadState() {
   try {
     const saved = localStorage.getItem('29029_anisa_arjun');
     if (saved) completions = JSON.parse(saved);
+    const customs = localStorage.getItem('29029_custom_activities');
+    if (customs) customActivities = JSON.parse(customs);
   } catch(e) {}
 }
 
 function saveState() {
   localStorage.setItem('29029_anisa_arjun', JSON.stringify(completions));
+  localStorage.setItem('29029_custom_activities', JSON.stringify(customActivities));
 }
 
 function isComplete(id) { return !!completions[id]; }
 
-function toggleSession(id) {
-  if (completions[id]) {
-    delete completions[id];
-    lastCompleted = null;
-  } else {
-    completions[id] = { at: new Date().toISOString() };
-    lastCompleted = id;
-    showUndoToast();
+// ========================
+// SESSION COMPLETION MODAL
+// ========================
+function openCompleteModal(sessionId) {
+  // Find the session
+  let session = null;
+  for (const week of TRAINING_PLAN) {
+    session = week.sessions.find(s => s.id === sessionId);
+    if (session) { activeModalWeek = week.week; break; }
   }
+  if (!session) return;
+
+  // If already completed, show edit/undo modal
+  if (completions[sessionId]) {
+    openEditModal(sessionId, session);
+    return;
+  }
+
+  activeModalSession = session;
+
+  document.getElementById('modalTitle').textContent = session.title;
+  document.getElementById('modalSubtitle').textContent = 'How did it go?';
+
+  let bodyHtml = '';
+
+  if (session.type === 'Stairs') {
+    bodyHtml = `
+      <div class="modal-field">
+        <label>Stair Trips Completed</label>
+        <input type="number" id="inputTrips" value="${session.plannedTrips || 10}" min="1" inputmode="numeric">
+        <div class="hint">Planned: ${session.plannedTrips || '?'} trips (${(session.plannedTrips || 0) * FEET_PER_TRIP} ft). Each trip = 23 ft.</div>
+      </div>
+    `;
+  } else if (session.type === 'Walk' || session.type === 'Bonus') {
+    bodyHtml = `
+      <div class="modal-field">
+        <label>Actual Duration (minutes)</label>
+        <input type="number" id="inputMinutes" value="${session.duration}" min="1" inputmode="numeric">
+        <div class="hint">Planned: ${session.duration} min. Log what you actually did!</div>
+      </div>
+    `;
+  } else {
+    bodyHtml = `
+      <div class="modal-field">
+        <label>Duration (minutes)</label>
+        <input type="number" id="inputMinutes" value="${session.duration}" min="1" inputmode="numeric">
+        <div class="hint">Planned: ${session.duration} min</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="modal-btn modal-btn-cancel" onclick="closeCompleteModal()">Cancel</button>
+    <button class="modal-btn modal-btn-save" onclick="saveCompletion()">Done! &#127881;</button>
+  `;
+  document.getElementById('completeModal').classList.add('visible');
+
+  // Auto-focus the input
+  setTimeout(() => {
+    const input = document.querySelector('#completeModal input[type=number]');
+    if (input) input.focus();
+  }, 100);
+}
+
+function openEditModal(sessionId, session) {
+  const data = completions[sessionId];
+  activeModalSession = session;
+
+  document.getElementById('modalTitle').textContent = session.title;
+  document.getElementById('modalSubtitle').textContent = 'Completed ' + new Date(data.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  let bodyHtml = '';
+  if (data.actualTrips !== undefined) {
+    bodyHtml = `
+      <div class="modal-field">
+        <label>Stair Trips Done</label>
+        <input type="number" id="inputTrips" value="${data.actualTrips}" min="1" inputmode="numeric">
+        <div class="hint">Logged: ${data.actualElevation} ft elevation</div>
+      </div>
+    `;
+  } else {
+    bodyHtml = `
+      <div class="modal-field">
+        <label>Duration (minutes)</label>
+        <input type="number" id="inputMinutes" value="${data.actualMinutes || session.duration}" min="1" inputmode="numeric">
+        <div class="hint">Logged: ${data.actualElevation || session.elevation} ft elevation</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="modal-btn modal-btn-delete" onclick="removeCompletion('${sessionId}')">Remove</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeCompleteModal()">Cancel</button>
+    <button class="modal-btn modal-btn-save" onclick="updateCompletion('${sessionId}')">Update</button>
+  `;
+  document.getElementById('completeModal').classList.add('visible');
+}
+
+function saveCompletion() {
+  const session = activeModalSession;
+  if (!session) return;
+
+  let actualElevation, actualMinutes, actualTrips;
+
+  if (session.type === 'Stairs') {
+    actualTrips = parseInt(document.getElementById('inputTrips').value) || session.plannedTrips || 0;
+    actualElevation = actualTrips * FEET_PER_TRIP;
+    actualMinutes = Math.round(actualTrips * 1.5);
+  } else {
+    actualMinutes = parseInt(document.getElementById('inputMinutes').value) || session.duration;
+    if (session.elevPerMin) {
+      actualElevation = Math.round(actualMinutes * session.elevPerMin);
+    } else {
+      // For strength/recovery, use planned elevation
+      actualElevation = session.elevation;
+    }
+  }
+
+  completions[session.id] = {
+    at: new Date().toISOString(),
+    actualMinutes,
+    actualElevation,
+    plannedElevation: session.elevation,
+    plannedMinutes: session.duration,
+    ...(actualTrips !== undefined ? { actualTrips, plannedTrips: session.plannedTrips } : {})
+  };
+
+  lastCompleted = session.id;
+  saveState();
+  closeCompleteModal();
+  showUndoToast(actualElevation);
+  render();
+}
+
+function updateCompletion(sessionId) {
+  const session = activeModalSession;
+  const existing = completions[sessionId];
+  if (!session || !existing) return;
+
+  if (existing.actualTrips !== undefined) {
+    const trips = parseInt(document.getElementById('inputTrips').value) || 0;
+    existing.actualTrips = trips;
+    existing.actualElevation = trips * FEET_PER_TRIP;
+  } else {
+    const mins = parseInt(document.getElementById('inputMinutes').value) || 0;
+    existing.actualMinutes = mins;
+    if (session.elevPerMin) {
+      existing.actualElevation = Math.round(mins * session.elevPerMin);
+    }
+  }
+
+  saveState();
+  closeCompleteModal();
+  render();
+}
+
+function removeCompletion(sessionId) {
+  delete completions[sessionId];
+  saveState();
+  closeCompleteModal();
+  render();
+}
+
+function closeCompleteModal() {
+  document.getElementById('completeModal').classList.remove('visible');
+  activeModalSession = null;
+}
+
+// ========================
+// CUSTOM ACTIVITIES
+// ========================
+function openAddModal(weekNum) {
+  activeModalWeek = weekNum;
+  document.getElementById('addType').value = 'walk';
+  document.getElementById('addMinutes').value = '30';
+  document.getElementById('addTrips').value = '10';
+  document.getElementById('addLaps').value = '1';
+  document.getElementById('addElev').value = '0';
+  document.getElementById('addNotes').value = '';
+  onAddTypeChange();
+  document.getElementById('addModal').classList.add('visible');
+}
+
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('visible');
+}
+
+function onAddTypeChange() {
+  const type = document.getElementById('addType').value;
+  document.getElementById('addMinutesField').style.display = (type === 'stairs' || type === 'stone_mtn') ? 'none' : 'block';
+  document.getElementById('addTripsField').style.display = type === 'stairs' ? 'block' : 'none';
+  document.getElementById('addLapsField').style.display = type === 'stone_mtn' ? 'block' : 'none';
+  document.getElementById('addElevField').style.display = type === 'other' ? 'block' : 'none';
+}
+
+function saveCustomActivity() {
+  const type = document.getElementById('addType').value;
+  const notes = document.getElementById('addNotes').value;
+  const weekNum = activeModalWeek;
+
+  let elevation = 0, duration = 0, title = '';
+
+  if (type === 'walk') {
+    duration = parseInt(document.getElementById('addMinutes').value) || 30;
+    elevation = Math.round(duration * 4); // moderate walk rate
+    title = `Extra Walk - ${duration} min`;
+  } else if (type === 'stairs') {
+    const trips = parseInt(document.getElementById('addTrips').value) || 10;
+    elevation = trips * FEET_PER_TRIP;
+    duration = Math.round(trips * 1.5);
+    title = `Extra Stairs - ${trips} Trips`;
+  } else if (type === 'stone_mtn') {
+    const laps = parseInt(document.getElementById('addLaps').value) || 1;
+    elevation = laps * STONE_MTN_ELEV;
+    duration = laps * 42 + 10;
+    title = `Stone Mountain - ${laps} Lap${laps > 1 ? 's' : ''}`;
+  } else {
+    duration = parseInt(document.getElementById('addMinutes').value) || 30;
+    elevation = parseInt(document.getElementById('addElev').value) || 0;
+    title = notes || `Activity - ${duration} min`;
+  }
+
+  const id = `custom_w${weekNum}_${Date.now()}`;
+
+  if (!customActivities[weekNum]) customActivities[weekNum] = [];
+  customActivities[weekNum].push({
+    id,
+    title,
+    type: type === 'stone_mtn' ? 'Stone Mtn' : type.charAt(0).toUpperCase() + type.slice(1),
+    elevation,
+    duration,
+    notes,
+    at: new Date().toISOString()
+  });
+
+  // Also mark as completed
+  completions[id] = {
+    at: new Date().toISOString(),
+    actualMinutes: duration,
+    actualElevation: elevation,
+    plannedElevation: 0,
+    plannedMinutes: 0,
+    isCustom: true
+  };
+
+  saveState();
+  closeAddModal();
+  showUndoToast(elevation);
+  render();
+}
+
+function removeCustomActivity(weekNum, actId) {
+  if (customActivities[weekNum]) {
+    customActivities[weekNum] = customActivities[weekNum].filter(a => a.id !== actId);
+    if (customActivities[weekNum].length === 0) delete customActivities[weekNum];
+  }
+  delete completions[actId];
   saveState();
   render();
 }
 
 function undoComplete() {
   if (lastCompleted) {
-    delete completions[lastCompleted];
+    // Check if it's a custom activity
+    if (lastCompleted.startsWith('custom_')) {
+      const match = lastCompleted.match(/custom_w(\d+)_/);
+      if (match) removeCustomActivity(parseInt(match[1]), lastCompleted);
+    } else {
+      delete completions[lastCompleted];
+    }
     lastCompleted = null;
     hideUndoToast();
     saveState();
@@ -826,8 +1284,9 @@ function undoComplete() {
   }
 }
 
-function showUndoToast() {
+function showUndoToast(elevation) {
   clearTimeout(undoTimeout);
+  document.getElementById('undoMsg').textContent = elevation > 0 ? `+${elevation.toLocaleString()} ft logged!` : 'Session logged!';
   document.getElementById('undoToast').classList.add('visible');
   undoTimeout = setTimeout(hideUndoToast, 4000);
 }
@@ -848,11 +1307,10 @@ function getCurrentWeek() {
 
 function getTotalElevation() {
   let total = 0;
-  TRAINING_PLAN.forEach(week => {
-    week.sessions.forEach(session => {
-      if (completions[session.id]) total += session.elevation;
-    });
-  });
+  for (const id in completions) {
+    const c = completions[id];
+    total += c.actualElevation || 0;
+  }
   return total;
 }
 
@@ -864,6 +1322,10 @@ function getTotalSessions() {
       if (completions[session.id]) completed++;
     });
   });
+  // Add custom activities
+  for (const wk in customActivities) {
+    completed += customActivities[wk].length;
+  }
   return { completed, total };
 }
 
@@ -875,9 +1337,16 @@ function getWeekStats(weekNum) {
     totalElevation += session.elevation;
     if (completions[session.id]) {
       completed++;
-      elevation += session.elevation;
+      elevation += completions[session.id].actualElevation || session.elevation;
     }
   });
+  // Add custom activities for this week
+  if (customActivities[weekNum]) {
+    customActivities[weekNum].forEach(ca => {
+      completed++;
+      elevation += ca.elevation;
+    });
+  }
   return { completed, total: totalSessions, elevation, totalElevation };
 }
 
@@ -947,6 +1416,7 @@ function renderCurrentWeek(container) {
   const week = TRAINING_PLAN[cw - 1];
   const stats = getWeekStats(cw);
   const phase = getPhase(cw);
+  const customs = customActivities[cw] || [];
 
   container.innerHTML = `
     <div class="week-card current-week expanded">
@@ -962,11 +1432,13 @@ function renderCurrentWeek(container) {
       </div>
       <div class="week-sessions" style="display:block">
         <div class="week-elev-summary">
-          <span>Elevation: <strong>${stats.elevation.toLocaleString()} ft</strong></span>
-          <span>Possible: ${stats.totalElevation.toLocaleString()} ft</span>
+          <span>Elevation logged: <strong>${stats.elevation.toLocaleString()} ft</strong></span>
+          <span>Planned: ${stats.totalElevation.toLocaleString()} ft</span>
         </div>
         ${week.sessions.filter(s => !s.isBonus).map(s => renderSession(s)).join('')}
-        <div class="bonus-note">Bonus sessions below are optional - great if you can fit them in!</div>
+        ${customs.map(ca => renderCustomActivity(ca, cw)).join('')}
+        <button class="add-activity-btn" onclick="openAddModal(${cw})">+ Add Extra Activity</button>
+        <div class="bonus-note" style="margin-top:0.6rem">Bonus sessions below are optional - great if you can fit them in!</div>
         ${week.sessions.filter(s => s.isBonus).map(s => renderSession(s)).join('')}
       </div>
     </div>
@@ -987,6 +1459,7 @@ function renderFullPlan(container) {
     const stats = getWeekStats(week.week);
     const isCurrentWeek = week.week === cw;
     const coreDone = stats.completed >= stats.total;
+    const customs = customActivities[week.week] || [];
 
     html += `
       <div class="week-card ${isCurrentWeek ? 'current-week' : ''} ${coreDone ? 'fully-complete' : ''} ${isCurrentWeek ? 'expanded' : ''}" id="week-${week.week}">
@@ -997,16 +1470,19 @@ function renderFullPlan(container) {
             <div class="week-dates">${week.dates}</div>
           </div>
           <div class="week-header-right">
-            <div class="week-progress-mini ${coreDone ? 'complete' : ''}">${stats.completed}/${stats.total}</div>
+            <div class="week-progress-mini ${coreDone ? 'complete' : ''}">${stats.completed}/${stats.total}${stats.elevation > 0 ? ` · ${stats.elevation.toLocaleString()} ft` : ''}</div>
             <div class="week-chevron">&#9660;</div>
           </div>
         </div>
         <div class="week-sessions">
           <div class="week-elev-summary">
-            <span>Elevation: <strong>${stats.elevation.toLocaleString()}</strong> ft</span>
+            <span>Logged: <strong>${stats.elevation.toLocaleString()}</strong> ft</span>
+            <span>Planned: ${stats.totalElevation.toLocaleString()} ft</span>
           </div>
           ${week.sessions.filter(s => !s.isBonus).map(s => renderSession(s)).join('')}
-          <div class="bonus-note">Bonus - optional</div>
+          ${customs.map(ca => renderCustomActivity(ca, week.week)).join('')}
+          <button class="add-activity-btn" onclick="event.stopPropagation(); openAddModal(${week.week})">+ Add Extra Activity</button>
+          <div class="bonus-note" style="margin-top:0.6rem">Bonus - optional</div>
           ${week.sessions.filter(s => s.isBonus).map(s => renderSession(s)).join('')}
         </div>
       </div>
@@ -1018,10 +1494,13 @@ function renderFullPlan(container) {
 
 function renderSession(session) {
   const done = isComplete(session.id);
-  const completedAt = done ? new Date(completions[session.id].at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+  const data = completions[session.id];
+  const completedAt = done ? new Date(data.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+  const actualElev = data ? data.actualElevation : 0;
+  const exceeded = data && data.actualElevation > data.plannedElevation;
 
   return `
-    <div class="session-card ${done ? 'completed' : ''} ${session.isBonus ? 'bonus-session' : ''}" onclick="toggleSession('${session.id}')">
+    <div class="session-card ${done ? 'completed' : ''} ${session.isBonus ? 'bonus-session' : ''}" onclick="openCompleteModal('${session.id}')">
       <div class="session-check ${done ? 'check-pop' : ''}">${done ? '&#10003;' : ''}</div>
       <div class="session-info">
         <div class="session-title">${session.title}</div>
@@ -1030,9 +1509,29 @@ function renderSession(session) {
           ${session.elevation > 0 ? `<span class="session-tag tag-elevation">${session.elevation.toLocaleString()} ft</span>` : ''}
           <span class="session-tag tag-duration">${session.duration} min</span>
           <span class="session-tag ${session.isBonus ? 'tag-bonus' : 'tag-type'}">${session.type}</span>
+          ${done && actualElev > 0 ? `<span class="session-tag tag-actual">${exceeded ? '&#11014; ' : ''}${actualElev.toLocaleString()} ft actual</span>` : ''}
+          ${done && data.actualMinutes && data.actualMinutes !== data.plannedMinutes ? `<span class="session-tag tag-actual">${data.actualMinutes} min actual</span>` : ''}
         </div>
         <div class="session-travel">Away from home? ${session.travel}</div>
         ${done ? `<div class="session-completed-date">Completed ${completedAt}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderCustomActivity(ca, weekNum) {
+  return `
+    <div class="session-card completed custom-session" onclick="removeCustomActivity(${weekNum}, '${ca.id}')">
+      <div class="session-check check-pop" style="background:var(--accent);border-color:var(--accent);color:white">&#10003;</div>
+      <div class="session-info">
+        <div class="session-title">${ca.title}</div>
+        ${ca.notes ? `<div class="session-desc">${ca.notes}</div>` : ''}
+        <div class="session-meta">
+          ${ca.elevation > 0 ? `<span class="session-tag tag-actual">${ca.elevation.toLocaleString()} ft</span>` : ''}
+          <span class="session-tag tag-duration">${ca.duration} min</span>
+          <span class="session-tag tag-type">${ca.type}</span>
+        </div>
+        <div class="session-completed-date">Logged ${new Date(ca.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
       </div>
     </div>
   `;
@@ -1046,7 +1545,7 @@ function renderStats(container) {
   for (let w = 1; w <= 24; w++) {
     const stats = getWeekStats(w);
     const isCurrent = w === getCurrentWeek();
-    const maxElev = 3500; // rough max weekly elevation for bar scaling
+    const maxElev = 3500;
     const pct = Math.min(100, stats.elevation / maxElev * 100);
     weeklyHtml += `
       <div style="display:flex;align-items:center;gap:8px;padding:5px 0;${isCurrent ? 'font-weight:700;' : ''}">
@@ -1134,6 +1633,14 @@ function toggleWeek(weekNum) {
   const card = document.getElementById(`week-${weekNum}`);
   if (card) card.classList.toggle('expanded');
 }
+
+// Close modals on overlay click
+document.getElementById('completeModal').addEventListener('click', function(e) {
+  if (e.target === this) closeCompleteModal();
+});
+document.getElementById('addModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddModal();
+});
 
 // ========================
 // INIT
